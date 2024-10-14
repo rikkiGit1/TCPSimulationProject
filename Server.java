@@ -47,41 +47,50 @@ public class Server {
 		        Collections.shuffle(copyPackets); //shuffles the copyPackets arraylist
 		        //int index = 0;
 		        for(int i = 0; i < copyPackets.size(); i++) {
-		        	if(rand.nextInt() > 20) { //if it passes through
-		        		responseWriter1.println(copyPackets.get(i).getPacketNumber() + " " + copyPackets.get(i).getPacketValue()); //connects to client line 43
-		        		System.out.println("Responding: " + copyPackets.get(i).getPacketNumber() + " " + copyPackets.get(i).getPacketValue());
-		
+		        	if(rand.nextInt(100) > 20) { //if it passes through
+		        		responseWriter1.println(copyPackets.get(i).getPacketNumber() + "" + copyPackets.get(i).getPacketValue()); //connects to client line 43
+		        		System.out.println("Responding: " + copyPackets.get(i).getPacketNumber() + "" + copyPackets.get(i).getPacketValue());
+		        		
 		        	}
 		        }
 		        responseWriter1.println("Finished sending packets.");
+		        System.out.println("Finished sending packets");
 		        
-		        do {
+		        
 		        System.out.println(requestReader1.readLine()); //prints out "Missing packets" - connects to line 51
+		        usersRequest = requestReader1.readLine();
+		        while(usersRequest != null && !usersRequest.equalsIgnoreCase("All packets recieved.")) {
 		        
-		        String clientResponse;
-		        while((clientResponse = requestReader1.readLine()) != null) { //keeps reading from line 59
+		        	
+		        //while(usersRequest != null) { //keeps reading from line 59
 		        	
 		        	for(int i = 0; i < copyPackets.size(); i++) {
-		        		if(clientResponse.equals(copyPackets.get(i).getPacketNumber())) {
+		        		if(usersRequest.equals(copyPackets.get(i).getPacketNumber())) { //if its matching a specific packet number in one of the subscripts
 		        			if(rand.nextInt(100) > 20) {
 		        			System.out.println("Resending " + copyPackets.get(i).getPacketNumber() + "" + copyPackets.get(i).getPacketValue());
-		        			responseWriter1.println("Resending " + copyPackets.get(i).getPacketNumber() + "" + copyPackets.get(i).getPacketValue());
-		        		}
+		        			responseWriter1.println(copyPackets.get(i).getPacketNumber() + "" + copyPackets.get(i).getPacketValue());
+		        			break;
+		        			}
 		        		}	
+		        	} 
+		        //}
+		        	usersRequest = requestReader1.readLine();
+		        	
+		        	if(usersRequest == null) {
+		        		responseWriter1.println("Finished sending packets.");
+		        		//break; //breaks it out of the while 
 		        	}
-		        }
-		        responseWriter1.println("Finished sending packets.");
 		        
-			} while(!usersRequest.equalsIgnoreCase("All packets recieved."));
+			}
+		        
+		        System.out.println("Process Completed!");
 		        
 		} 
 		
 		catch (IOException e) {
 			System.out.println(
 					"Exception caught when trying to listen on port " + portNumber + " or listening for a connection");
-			System.out.println(e.getMessage());
+			System.out.println(e.getMessage());  
 		}
-	
-
 }
 }

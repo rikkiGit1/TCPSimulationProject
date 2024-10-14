@@ -39,41 +39,84 @@ public class Client {
                 
                 // Now read server responses in a loop
                 ArrayList<Packet> tracker = new ArrayList<>(totalPackets);
-                
-                while (tracker.size() < totalPackets) {
+                int numPackets = 0;
+                String serverResponse = responseReader.readLine(); //reads the server message from line 51
+                while (numPackets < totalPackets) {
                 	
+                	int packetNumber;
                 	
-                	String serverResponse; //reads the server message from line 51
-                	while((serverResponse = responseReader.readLine()) != null) {
-                    int packetNumber = Integer.parseInt(serverResponse.substring(0, 1)); //stores the packet number 
-                    String packetValue = serverResponse.substring(1); //stores the packet value
-                    tracker.add(new Packet(packetNumber, packetValue)); //adds packet number and packet value to new Packet, adds to tracker arraylist
-                    
-                    boolean hasPacket = false;
-                    if(responseReader.readLine().equalsIgnoreCase("Finished sending packets.")) {
-                    	System.out.println("Missing packets: ");
-                    	requestWriter.println("Missing packets: "); //sends message to client - connects to line 57
-                    	for(int i = 0; i < tracker.size(); i++) {
-                    		for(int j = 0; j < tracker.size(); j++) {
-                    			if(i == Integer.parseInt(tracker.get(j).getPacketNumber())) {
-                    				hasPacket = true;
-                    			}
-                    		}
-                    		if(!hasPacket) {
-                    			requestWriter.println(tracker.get(i).getPacketNumber()); //connects to line 58
-                    		}
-                    	}
-                    }
-                    requestWriter.println("All packets received.");
-                    
-                    Collections.sort(tracker);
-                  for(int i = 0; i < tracker.size(); i++) {
-                	  System.out.print(tracker.get(i).getPacketValue());
-                  }
+                	//serverResponse = responseReader.readLine();
+                	if(serverResponse.length() == 2) {
+                		packetNumber = Integer.parseInt(serverResponse.substring(0, 1)); //stores the packet number 
+                		String packetValue = serverResponse.substring(1); //stores the packet value
+                		tracker.add(new Packet(packetNumber, packetValue)); //adds packet number and packet value to new Packet, adds to tracker arraylist
+                		numPackets++;
+                		System.out.println("Packet #" + packetNumber + " recieved.");
                 	}
-                }
-
-            } catch (UnknownHostException e) {
+                		else {
+                			packetNumber = Integer.parseInt(serverResponse.substring(0, 2)); //stores the packet number 
+                    		String packetValue = serverResponse.substring(2); //stores the packet value
+                    		tracker.add(new Packet(packetNumber, packetValue)); //adds packet number and packet value to new Packet, adds to tracker arraylist
+                    		numPackets++;
+                    		System.out.println("Packet #" + packetNumber + " recieved.");
+                		}
+               
+                	//while((serverResponse = responseReader.readLine()) != null) {
+                		serverResponse = responseReader.readLine();
+                		if(serverResponse.equalsIgnoreCase("Finished sending packets.")) {
+                			
+                			System.out.println("Requesting Missing packets...");
+                			requestWriter.println("Missing Packets"); //sends message to client - connects to line 57
+                			
+                			for(int i = 0; i < totalPackets; i++) { //counts from 0-13
+                				boolean hasPacket = false; //resets for each packet
+                				//totalPackets
+                				for(int j = 0; j < tracker.size(); j++) { //checks to see if the tracker arraylist has all 20
+                					
+                					if(i == Integer.parseInt(tracker.get(j).getPacketNumber())) { //if the tracker arraylist has the current index packet
+                						hasPacket = true; //has the packet
+                						break;
+                					} //end if
+        
+                				 }//end inner for
+                				if(!hasPacket) { //for each packet - if it doesnt have packet, sends request to server
+                					//i is the number that its missing string.valueof
+            						requestWriter.println(String.valueOf(i)); //requests missing packet
+            						serverResponse = responseReader.readLine();
+            						if(serverResponse.length() == 2) {
+            	                		packetNumber = Integer.parseInt(serverResponse.substring(0, 1)); //stores the packet number 
+            	                		String packetValue = serverResponse.substring(1); //stores the packet value
+            	                		tracker.add(new Packet(packetNumber, packetValue)); //adds packet number and packet value to new Packet, adds to tracker arraylist
+            	                		numPackets++;
+            	                		System.out.println("Packet #" + packetNumber + " recieved.");
+            	                	}
+            	                		else {
+            	                			packetNumber = Integer.parseInt(serverResponse.substring(0, 2)); //stores the packet number 
+            	                    		String packetValue = serverResponse.substring(2); //stores the packet value
+            	                    		tracker.add(new Packet(packetNumber, packetValue)); //adds packet number and packet value to new Packet, adds to tracker arraylist
+            	                    		numPackets++;
+            	                    		System.out.println("Packet #" + packetNumber + " recieved.");
+            	                		}
+            						
+            						
+            					} //end if
+                				
+                				if(numPackets == totalPackets) {
+                					break;
+                				}
+                			 }//end outer for
+                		 } //end if
+                	//}
+                  }
+                System.out.println("SENDING MESSAGE: All packets recieved.");
+                requestWriter.println("All packets received.");
+                
+                Collections.sort(tracker);
+        		for(int i = 0; i < tracker.size(); i++) {
+        			System.out.print(tracker.get(i).getPacketValue());
+               }
+            } 
+         catch (UnknownHostException e) {
                 System.err.println("Don't know about host " + hostName);
                 System.exit(1);
             } catch (IOException e) {
@@ -82,4 +125,3 @@ public class Client {
             }
     }
 }
-
